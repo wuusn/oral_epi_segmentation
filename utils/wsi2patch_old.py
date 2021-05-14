@@ -18,7 +18,6 @@ def task_wsi2patch(ori_dir, mask_dir, tar_dir, params):
 def one_wsi2patch(src_path, params):
     src_mag = params['src_mag']
     tar_mag = params['tar_mag']
-    mask_mag = param['mask_mag']
     patch_size = params['patch_size']
     src_ext = params['src_ext']
     tar_ext = params['tar_ext']
@@ -35,12 +34,11 @@ def one_wsi2patch(src_path, params):
         return
 
     name = src_path.split('/')[-1].replace(f'.{src_ext}','')
-    #label = mask_dir.split('/')[-1]
-    #out_dir = f'{tar_dir}/{label}/{name}'
-    out_dir = f'{tar_dir}/{name}'
+    label = mask_dir.split('/')[-1]
+    out_dir = f'{tar_dir}/{label}/{name}'
     os.makedirs(out_dir, exist_ok=True)
 
-    mask_path = f'{mask_dir}/{name}{mask_ext}'
+    mask_path = f'{mask_dir}/{name}.{mask_ext}'
     if os.path.exists(mask_path) == False:
         return
     mask = cv2.imread(mask_path, 0)
@@ -66,11 +64,10 @@ def one_wsi2patch(src_path, params):
 
 
 if __name__ == '__main__':
-    wsi_dir = '/mnt/md0/_datasets/OralCavity/WSI/SFVA' 
-    #tumor_mask_dir = '/mnt/md0/_datasets/OralCavity/WSI/Masks_SFVA/tumor' 
-    epi_fine_mask_dir = '/mnt/md0/_datasets/OralCavity/WSI/extracted_tuned_masks/SFVA'
-    #nontumor_mask_dir = '/mnt/md0/_datasets/OralCavity/WSI/Masks_SFVA/nontumor' 
-    tar_dir = '/mnt/md0/_datasets/OralCavity/wsi_patch/SFVA/10x256' 
+    wsi_dir = '/mnt/md0/_datasets/OralCavity/WSI/OralCavity_SFVA' 
+    tumor_mask_dir = '/mnt/md0/_datasets/OralCavity/WSI/Masks_SFVA/tumor' 
+    nontumor_mask_dir = '/mnt/md0/_datasets/OralCavity/WSI/Masks_SFVA/nontumor' 
+    tar_dir = '/mnt/md0/_datasets/OralCavity/wsi/sfva/10x256' 
 
     mag = 10
     patch_size = 256
@@ -78,13 +75,12 @@ if __name__ == '__main__':
     params = dict(
             src_mag=40,
             tar_mag=10,
-            mask_mag = 2.5,
             patch_size=256,
             src_ext='tif',
             tar_ext='png',
-            mask_ext='_tuned.png',
+            mask_ext='png',
             cpu_cores = 40,
             )
 
-    task_wsi2patch(wsi_dir, epi_fine_mask_dir, tar_dir, params)
-    #task_wsi2patch(wsi_dir, nontumor_mask_dir, tar_dir, params)
+    task_wsi2patch(wsi_dir, tumor_mask_dir, tar_dir, params)
+    task_wsi2patch(wsi_dir, nontumor_mask_dir, tar_dir, params)

@@ -231,7 +231,7 @@ class BasicDataset(Dataset):
             return {'image': torch.from_numpy(np_img), 'mask': torch.from_numpy(np_mask), 'edge_weight': torch.from_numpy(edge_weight)}
         if self.args.gradient==True:
             np_img = get_gradient(np_img)
-        return {'image': torch.from_numpy(np_img)}
+        return {'image': torch.from_numpy(np_img/255)}
 
 
 
