@@ -26,8 +26,26 @@ from sklearn.metrics import confusion_matrix
 
 #base_dir= '/mnt/md0/_datasets/OralCavity/tma@10_2'
 #base_dir= '/mnt/md0/_datasets/OralCavity/tma_3'
-base_dir = '/mnt/md0/_datasets/OralCavity/tma' 
+#base_dir = '/mnt/md0/_datasets/OralCavity/tma' 
 #base_dir = '/mnt/md0/_datasets/OralCavity/wsi' 
+base_dir = '/mnt/D/train_wsi' 
+
+def metrics(cm):
+    cm = cm.type(torch.DoubleTensor)
+    accuracy = cm.diag().sum() / (cm.sum() + 1e-15)
+    accuracy = accuracy.item()#.detach().cpu().numpy()
+    precision = cm.diag() / (cm.sum(dim=0) + 1e-15)
+    precision = precision[1].item()#.detach().cpu().numpy()
+    recall = cm.diag() / (cm.sum(dim=1) + 1e-15)
+    recall = recall[1].item()#.detach().cpu().numpy()
+    dice = 2.0 * cm.diag() / (cm.sum(dim=1) + cm.sum(dim=0) + 1e-15)
+    dice = dice[1].item()#.detach().cpu().numpy()
+    return dict(
+        accuracy = accuracy,
+        precision = precision,
+        recall = recall,
+        dice = dice,
+    )
 
 def train_net(net,
               device,
@@ -133,7 +151,13 @@ def train_net(net,
                 if net.n_classes==1:
                     masks_pred = masks_pred.squeeze(1)
 
-                #p=torch.sigmoid(masks_pred)
+                p=torch.sigmoid(masks_pred)
+		y_pred = torch.flatten(p>.5)
+                y_true = torch.flatten(true_masks).to(device=device, dtype=torch.long)
+                m = confusion_matrix(y_true, y_pred)
+                cm += m.to(cm)
+
+
                 #p = p.detach().squeeze().cpu().numpy()
                 #cpredflat = (p>.5).astype(np.uint8).flatten()
                 #yflat = true_masks.cpu().numpy().flatten()
@@ -155,6 +179,11 @@ def train_net(net,
                 loss.backward()
                 optimizer.step()
                 pbar.update(imgs.shape[0])
+	metric = metrics(cm)
+        writer.add_scalar(f'train/accuracy', metric['accuracy'], epoch)
+        writer.add_scalar(f'train/precision', metric['precision'], epoch)
+        writer.add_scalar(f'train/recall', metric['recall'], epoch)
+        writer.add_scalar(f'train/dice', metric['dice'], epoch)
 
         epoch_loss = epoch_loss / n_train
         val_loss=0
@@ -170,6 +199,11 @@ def train_net(net,
                 if net.n_classes==1:
                     masks_pred = masks_pred.squeeze(1)
                 loss = criterion(masks_pred, true_masks)
+		p = torch.sigmoid(masks_pred)
+                y_pred = torch.flatten(p>.5)
+                y_true = torch.flatten(true_masks).to(device=device, dtype=torch.long)
+                m = confusion_matrix(y_true, y_pred)
+                cm += m.to(cm)
                 val_loss+= loss.item()*imgs.shape[0]
                 pbar.update(imgs.shape[0])
         val_loss=val_loss/n_val
@@ -178,7 +212,8 @@ def train_net(net,
         #acc = (cmatrix/cmatrix.sum()).trace()
         loss_history['train'].append(epoch_loss)
         loss_history['val'].append(val_loss)
-
+	metric = metrics(cm)
+	print('epoch: ', epoch, metric)
         #writer.add_scalar(f'val/acc', acc, epoch)
         #writer.add_scalar(f'val/TN', cmatrix[0,0], epoch)
         #writer.add_scalar(f'val/TP', cmatrix[1,1], epoch)
@@ -186,6 +221,10 @@ def train_net(net,
         #writer.add_scalar(f'val/FN', cmatrix[1,0], epoch)
         #writer.add_scalar(f'val/TNR', cmatrix[0,0]/(cmatrix[0,0]+cmatrix[0,1]), epoch)
         #writer.add_scalar(f'val/TPR', cmatrix[1,1]/(cmatrix[1,1]+cmatrix[1,0]), epoch)
+        writer.add_scalar(f'val/accuracy', metric['accuracy'], epoch)
+        writer.add_scalar(f'val/precision', metric['precision'], epoch)
+        writer.add_scalar(f'val/recall', metric['recall'], epoch)
+        writer.add_scalar(f'val/dice', metric['dice'], epoch)
 
         if net.n_classes > 1:
             logging.info('Validation cross entropy: {}'.format(val_loss))
@@ -201,11 +240,31 @@ def train_net(net,
                 logging.info('Created checkpoint directory')
             except OSError:
                 pass
+            if epoch > 90 or epoch <10:
+                torch.save(net.to(torch.device('cpu')), dir_checkpoint + f'/epoch{epoch}.pth')
+                net.to(device)
+
             if val_loss < min_loss:
                 min_loss = val_loss
-                torch.save(net.to(torch.device('cpu')), dir_checkpoint + f'/min.pth')
+                torch.save(net.to(torch.device('cpu')), dir_checkpoint + f'/min_loss.pth')
                 net.to(device)
                 logging.info(f'Checkpoint {epoch + 1} as new min val loss model saved !')
+            if  metric['precision'] > best_precision:
+                best_precision = metric['precision']
+                torch.save(net.to(torch.device('cpu')), dir_checkpoint + f'/best_precision.pth')
+                net.to(device)
+                logging.info(f'Checkpoint {epoch + 1} as new best precision model saved !')
+            if  metric['recall'] > best_recall:
+                best_recall= metric['recall']
+                torch.save(net.to(torch.device('cpu')), dir_checkpoint + f'/best_recall.pth')
+                net.to(device)
+                logging.info(f'Checkpoint {epoch + 1} as new best recall model saved !')
+            if  metric['dice'] > best_dice:
+                best_dice= metric['dice']
+                torch.save(net.to(torch.device('cpu')), dir_checkpoint + f'/best_dice.pth')
+                net.to(device)
+                logging.info(f'Checkpoint {epoch + 1} as new best dice model saved !')
+
 
     writer.close()
     N = epochs
