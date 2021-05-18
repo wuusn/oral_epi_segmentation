@@ -167,7 +167,8 @@ class BasicDataset(Dataset):
         self.dir = dir
         self.phase = phase
         self.args = args
-        self.img_paths = [f for f in glob(f'{dir}/*/*/*.png') if not f.endswith('_mask.png')]
+        #self.img_paths = [f for f in glob(f'{dir}/*/*/*.png') if not f.endswith('_mask.png')]
+        self.img_paths = [f for f in glob(f'{dir}/*/*.png') if not f.endswith('_mask.png')]
         self.label2idx = {'epi':1, 'nontumor':0, 'tumor':1}
 
     def __len__(self):
@@ -177,8 +178,9 @@ class BasicDataset(Dataset):
         img_path = self.img_paths[i]
         mask_path = img_path.replace('.png', '_mask.png')
         pil_img = Image.open(img_path)
-        label = img_path.split('/')[-3]
-        label = self.label2idx[label]
+        if self.args.tumor:
+            label = img_path.split('/')[-3]
+            label = self.label2idx[label]
         if exists(mask_path):
             pil_mask = Image.open(mask_path).convert(mode='1')
 

@@ -22,13 +22,18 @@ from torch.utils.tensorboard import SummaryWriter
 from utils.dataset import BasicDataset, TMADataset
 from torch.utils.data import DataLoader, random_split
 
-from sklearn.metrics import confusion_matrix
+#from sklearn.metrics import confusion_matrix
 
 #base_dir= '/mnt/md0/_datasets/OralCavity/tma@10_2'
 #base_dir= '/mnt/md0/_datasets/OralCavity/tma_3'
 #base_dir = '/mnt/md0/_datasets/OralCavity/tma' 
 #base_dir = '/mnt/md0/_datasets/OralCavity/wsi' 
-base_dir = '/mnt/D/train_wsi' 
+base_dir = '/mnt/D/Oral/train_wsi' 
+
+def confusion_matrix(y_true, y_pred, N=2):
+    indices = N * y_true + y_pred
+    m = torch.bincount(indices, minlength=N**2).reshape(N,N)
+    return m
 
 def metrics(cm):
     cm = cm.type(torch.DoubleTensor)
@@ -133,6 +138,7 @@ def train_net(net,
     for epoch in range(start_epoch, epochs+start_epoch):
         net.train()
         epoch_loss = 0
+        cm = torch.zeros(2,2).to(device)
         with tqdm(total=n_train, desc=f'Epoch {epoch + 1}/{epochs}', unit='img') as pbar:
             for batch in train_loader:
                 imgs = batch['image']
@@ -152,7 +158,7 @@ def train_net(net,
                     masks_pred = masks_pred.squeeze(1)
 
                 p=torch.sigmoid(masks_pred)
-		y_pred = torch.flatten(p>.5)
+                y_pred = torch.flatten(p>.5)
                 y_true = torch.flatten(true_masks).to(device=device, dtype=torch.long)
                 m = confusion_matrix(y_true, y_pred)
                 cm += m.to(cm)
@@ -179,7 +185,7 @@ def train_net(net,
                 loss.backward()
                 optimizer.step()
                 pbar.update(imgs.shape[0])
-	metric = metrics(cm)
+        metric = metrics(cm)
         writer.add_scalar(f'train/accuracy', metric['accuracy'], epoch)
         writer.add_scalar(f'train/precision', metric['precision'], epoch)
         writer.add_scalar(f'train/recall', metric['recall'], epoch)
@@ -188,6 +194,7 @@ def train_net(net,
         epoch_loss = epoch_loss / n_train
         val_loss=0
         net.eval()
+        cm = torch.zeros(2,2).to(device)
         with tqdm(total=n_val, desc="validation round", unit='img', leave=False) as pbar:
             for batch in val_loader:
                 imgs = batch['image']
@@ -199,7 +206,7 @@ def train_net(net,
                 if net.n_classes==1:
                     masks_pred = masks_pred.squeeze(1)
                 loss = criterion(masks_pred, true_masks)
-		p = torch.sigmoid(masks_pred)
+                p = torch.sigmoid(masks_pred)
                 y_pred = torch.flatten(p>.5)
                 y_true = torch.flatten(true_masks).to(device=device, dtype=torch.long)
                 m = confusion_matrix(y_true, y_pred)
@@ -212,8 +219,8 @@ def train_net(net,
         #acc = (cmatrix/cmatrix.sum()).trace()
         loss_history['train'].append(epoch_loss)
         loss_history['val'].append(val_loss)
-	metric = metrics(cm)
-	print('epoch: ', epoch, metric)
+        metric = metrics(cm)
+        print('epoch: ', epoch, metric)
         #writer.add_scalar(f'val/acc', acc, epoch)
         #writer.add_scalar(f'val/TN', cmatrix[0,0], epoch)
         #writer.add_scalar(f'val/TP', cmatrix[1,1], epoch)
