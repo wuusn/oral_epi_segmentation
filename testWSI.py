@@ -293,6 +293,7 @@ def task(src_path, net, device, args):
 #
 def multi_task(src_dir, net, device, args):
     src_paths = glob(f'{args.src}/*.{args.src_ext}')
+    #src_paths = src_paths[:1]
     C = np.zeros((2,2))
     D=0
     count = 0

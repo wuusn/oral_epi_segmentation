@@ -15,10 +15,13 @@ model_path = sys.argv[1]
 target = sys.argv[2]
 src_ext = sys.argv[3]
 mask_ext = sys.argv[4]
-mark = model_path.split('/')[-3] + '_' + model_path.split('/')[-1].replace('.pth', '').replace('CP_epoch', '')
-cohort = target.split('/')[-2].lower()
-phases = model_path.split('/')
-save_dir = model_path.replace(f'{phases[-2]}/{phases[-1]}',cohort+'_result')
+#mark = model_path.split('/')[-3] + '_' + model_path.split('/')[-1].replace('.pth', '').replace('CP_epoch', '')
+mark = ''
+#cohort = target.split('/')[-2].lower()
+cohort = ''
+#phases = model_path.split('/')
+#save_dir = model_path.replace(f'{phases[-2]}/{phases[-1]}',cohort+'_result')
+save_dir = sys.argv[5]
 os.makedirs(save_dir, exist_ok=True)
 device = torch.device(f'cuda' if torch.cuda.is_available() else 'cpu')
 net = torch.load(model_path, map_location=device)
@@ -40,14 +43,17 @@ def mask2rgb(mask):
 def testOneTMA(im_path):
     name = im_path.split('/')[-1].replace(src_ext, '')
     pil_im = Image.open(im_path)
-    pil_im.save(f'{save_dir}/{name}.png')
-    mask_path = im_path.replace(src_ext, mask_ext)
-    if os.path.exists(mask_path)==False:
-        mask_path = im_path.replace(src_ext, f'_mask{mask_ext}')
-    pil_mask = Image.open(mask_path)
-    pil_mask.save(f'{save_dir}/{name}_mask.png')
+    #pil_im.save(f'{save_dir}/{name}.png')
+    #mask_path = im_path.replace(src_ext, mask_ext)
+    #if os.path.exists(mask_path)==False:
+    #    mask_path = im_path.replace(src_ext, f'_mask{mask_ext}')
+    #pil_mask = Image.open(mask_path)
+    #pil_mask.save(f'{save_dir}/{name}_mask.png')
     #phase = im_path.split('/')[-3]
     w,h = pil_im.size
+    w=w//4
+    h=h//4
+    pil_im=pil_im.resize((w,h), Image.BICUBIC)
     M = np.zeros((h+psize,w+psize)).astype(np.uint8)
     Heat = np.zeros((h+psize,w+psize, 3)).astype(np.uint8)
     #if mode == 'tma':
@@ -60,27 +66,27 @@ def testOneTMA(im_path):
         for i in range(0,w,psize):
             count +=1
             patch = pil_im.crop((i,j,i+psize,j+psize))
-            patch_mask = pil_mask.crop((i,j,i+psize,j+psize))
+            #patch_mask = pil_mask.crop((i,j,i+psize,j+psize))
             np_patch = np.array(patch).astype(np.uint8)
             #if phase == 'nontumor':
             #    np_mask = np.zeros((psize,psize))
             #else:
-            np_mask= np.array(patch_mask).astype(np.uint8)
+            #np_mask= np.array(patch_mask).astype(np.uint8)
             #tensor_patch = transforms.ToTensor()(np_patch)
             np_patch = np_patch.transpose((2,0,1))
             #np_mask = np_mask.transpose((2,0,1))
             np_patch = np_patch / 255
-            np_mask = np_mask / 255 if np.max(np_mask) > 1 else np_mask
+            #np_mask = np_mask / 255 if np.max(np_mask) > 1 else np_mask
             tensor_patch = torch.from_numpy(np_patch)
-            y = torch.from_numpy(np_mask)
-            y = y.unsqueeze(0)
-            y = y.to(device, torch.float32)
+            #y = torch.from_numpy(np_mask)
+            #y = y.unsqueeze(0)
+            #y = y.to(device, torch.float32)
             x = tensor_patch.unsqueeze(0)
             x = x.to(device, dtype=torch.float32)
             output = net(x)
             masks_pred = output
-            loss = criterion(masks_pred.squeeze(0), y)
-            Loss += loss.item()
+            #loss = criterion(masks_pred.squeeze(0), y)
+            #Loss += loss.item()
             if net.n_classes > 1:
                 output = output.detach().squeeze().cpu().numpy()
                 output = np.moveaxis(output,0,-1)
@@ -93,9 +99,9 @@ def testOneTMA(im_path):
                 pred = output.detach().squeeze().cpu().numpy()
                 mask_pred = (pred>.5).astype(np.uint8)
                 bool_mask = pred>.5
-                yflat = y.cpu().numpy().flatten()
+                #yflat = y.cpu().numpy().flatten()
                 cpredflat = bool_mask.astype(np.uint8).flatten()
-                cmatrix = cmatrix + confusion_matrix(yflat, cpredflat, range(2))
+                #cmatrix = cmatrix + confusion_matrix(yflat, cpredflat, range(2))
                 jet_pred = cm.jet(pred)[:,:,:3]*255
                 jet_pred = jet_pred.astype(np.uint8)
                 rgm_im = np.array(patch).astype(np.uint8)#.convert('RGB')
@@ -121,28 +127,30 @@ def testOneTMA(im_path):
     heatname = f'{save_dir}/{name}_pred_heat.png'
     pil_M.save(maskname)
     pil_H.save(heatname)
-    return Loss/count, cmatrix
+    #return Loss/count, cmatrix
 if __name__ == '__main__':
 
     if target.endswith(src_ext):
         print(testOneTMA(target))
     else:
         #im_paths = glob(f'{target}/*/*{ext}')
-        cmatrix = np.zeros((2,2))
+        #cmatrix = np.zeros((2,2))
         im_paths = glob(f'{target}/*{src_ext}')
+        #im_paths = im_paths[:1]
         count = 0
         Loss=0
-        C= np.zeros((2,2))
+        #C= np.zeros((2,2))
         for im_path in im_paths:
-            loss, cmatrix = testOneTMA(im_path)
-            Loss += loss
-            C += cmatrix
-            count +=1
-        Loss = Loss/ count
-        PA = (C/C.sum()).trace()*100
-        R = C[1,1]/(C[1,1]+C[1,0])*100
-        PPV = C[1,1]/(C[1,1]+C[0,1])*100
-        D = 2*C[1,1]/(2*C[1,1]+C[0,1]+C[1,0])*100
-        print(mark)
-        print('Loss: %.2f  PA: %.2f  R: %.2f  PPV: %.2f  D: %.2f' %(Loss, PA,R,PPV, D))
+            #loss, cmatrix = testOneTMA(im_path)
+            testOneTMA(im_path)
+            #Loss += loss
+            #C += cmatrix
+            #count +=1
+        #Loss = Loss/ count
+        #PA = (C/C.sum()).trace()*100
+        #R = C[1,1]/(C[1,1]+C[1,0])*100
+        #PPV = C[1,1]/(C[1,1]+C[0,1])*100
+        #D = 2*C[1,1]/(2*C[1,1]+C[0,1]+C[1,0])*100
+        #print(mark)
+        #print('Loss: %.2f  PA: %.2f  R: %.2f  PPV: %.2f  D: %.2f' %(Loss, PA,R,PPV, D))
 
