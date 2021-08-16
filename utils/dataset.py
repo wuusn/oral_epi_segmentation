@@ -167,8 +167,8 @@ class BasicDataset(Dataset):
         self.dir = dir
         self.phase = phase
         self.args = args
-        #self.img_paths = [f for f in glob(f'{dir}/*/*/*.png') if not f.endswith('_mask.png')]
-        self.img_paths = [f for f in glob(f'{dir}/*/*.png') if not f.endswith('_mask.png')]
+        self.img_paths = [f for f in glob(f'{dir}/*/*/*.png') if not f.endswith('_mask.png')]
+        #self.img_paths = [f for f in glob(f'{dir}/*/*.png') if not f.endswith('_mask.png')]
         self.label2idx = {'epi':1, 'nontumor':0, 'tumor':1}
 
     def __len__(self):
