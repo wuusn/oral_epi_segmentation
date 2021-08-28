@@ -9,19 +9,21 @@ from torchvision import transforms
 import torch.nn as nn
 import sys
 from matplotlib import cm
+from cypath.pytorch.normalizeStaining import normalizeStaining
 
 psize=256
+scale = 1
 model_path = sys.argv[1]
 target = sys.argv[2]
 src_ext = sys.argv[3]
-mask_ext = sys.argv[4]
+save_dir = sys.argv[4]
+#mask_ext = sys.argv[4]
 #mark = model_path.split('/')[-3] + '_' + model_path.split('/')[-1].replace('.pth', '').replace('CP_epoch', '')
 mark = ''
 #cohort = target.split('/')[-2].lower()
 cohort = ''
 #phases = model_path.split('/')
 #save_dir = model_path.replace(f'{phases[-2]}/{phases[-1]}',cohort+'_result')
-save_dir = sys.argv[5]
 os.makedirs(save_dir, exist_ok=True)
 device = torch.device(f'cuda' if torch.cuda.is_available() else 'cpu')
 net = torch.load(model_path, map_location=device)
@@ -51,8 +53,8 @@ def testOneTMA(im_path):
     #pil_mask.save(f'{save_dir}/{name}_mask.png')
     #phase = im_path.split('/')[-3]
     w,h = pil_im.size
-    w=w//4
-    h=h//4
+    w=w//scale
+    h=h//scale
     pil_im=pil_im.resize((w,h), Image.BICUBIC)
     M = np.zeros((h+psize,w+psize)).astype(np.uint8)
     Heat = np.zeros((h+psize,w+psize, 3)).astype(np.uint8)
@@ -68,6 +70,10 @@ def testOneTMA(im_path):
             patch = pil_im.crop((i,j,i+psize,j+psize))
             #patch_mask = pil_mask.crop((i,j,i+psize,j+psize))
             np_patch = np.array(patch).astype(np.uint8)
+            try:
+                np_patch,_,_ = normalizeStaining(np_patch)
+            except np.linalg.LinAlgError:
+                np_patch = np_patch
             #if phase == 'nontumor':
             #    np_mask = np.zeros((psize,psize))
             #else:
@@ -115,18 +121,18 @@ def testOneTMA(im_path):
 #            if mode == 'tma':
 #                M[j:j+psize,i:i+psize, :] = mask2rgb(mask_pred)
 #            else:
-            M[j:j+psize,i:i+psize] = mask_pred
+            M[j:j+psize,i:i+psize] = (pred*255).astype(np.uint8)#mask_pred
             Heat[j:j+psize,i:i+psize,:] = heat
 #
 #    if mode == 'tma':
 #        pil_M = Image.fromarray(M[:h,:w])
 #    else:
-    pil_M = Image.fromarray(M[:h,:w]*255)
+    pil_M = Image.fromarray(M[:h,:w])
     pil_H = Image.fromarray(Heat[:h,:w,:])
     maskname = f'{save_dir}/{name}_pred.png'
     heatname = f'{save_dir}/{name}_pred_heat.png'
     pil_M.save(maskname)
-    pil_H.save(heatname)
+    #pil_H.save(heatname)
     #return Loss/count, cmatrix
 if __name__ == '__main__':
 
