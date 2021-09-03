@@ -70,10 +70,10 @@ def testOneTMA(im_path):
             patch = pil_im.crop((i,j,i+psize,j+psize))
             #patch_mask = pil_mask.crop((i,j,i+psize,j+psize))
             np_patch = np.array(patch).astype(np.uint8)
-            #try:
-            #    np_patch,_,_ = normalizeStaining(np_patch)
-            #except np.linalg.LinAlgError:
-            #    np_patch = np_patch
+            try:
+                np_patch,_,_ = normalizeStaining(np_patch)
+            except np.linalg.LinAlgError:
+                np_patch = np_patch
             #if phase == 'nontumor':
             #    np_mask = np.zeros((psize,psize))
             #else:
