@@ -108,7 +108,7 @@ def test_wsi_dataset(dataset, args):
             pil_mask_pred = Image.fromarray(pred[i]*255)
             pil_mask_pred = pil_mask_pred.resize(\
                     (psize//downby, psize//downby), Image.BICUBIC)
-            np_mask_pred = (np.array(pil_mask_pred)/255).astype(np.uint8)
+            np_mask_pred = np.array(pil_mask_pred)#/255).astype(np.uint8)
             Mask[left//scale//downby:left//scale//downby+psize//downby,\
                     top//scale//downby:top//scale//downby+psize//downby]\
                 = np_mask_pred
@@ -261,10 +261,11 @@ def task(src_path, net, device, args):
             os.makedirs(args.save_result_dir, exist_ok=True)
             #tmp_name = f'{args.save_result_dir}/{name}_pred_laid{args.laid}.{args.tar_ext}'
             tmp_name = f'{args.save_result_dir}/{name}_pred.{args.tar_ext}'
-            png.from_array(Mask*255, mode='L').save(tmp_name)
+            #png.from_array(Mask*255, mode='L').save(tmp_name)
+            png.from_array(Mask, mode='L').save(tmp_name)
             #tmp_name = f'{args.save_result_dir}/{name}_heat_laid{args.laid}.{args.tar_ext}'
             tmp_name = f'{args.save_result_dir}/{name}_heat.{args.tar_ext}'
-            Image.fromarray(Heat).save(tmp_name)
+            #Image.fromarray(Heat).save(tmp_name)
 
         #if args.save_src_dir:
         if args.save_result_dir:
@@ -299,7 +300,7 @@ def multi_task(src_dir, net, device, args):
     C = np.zeros((2,2))
     D=0
     count = 0
-    for src_path in src_paths[:1]:
+    for src_path in src_paths:
         name = src_path.split('/')[-1].replace(f'.{args.src_ext}', '')
         anno_path =  f'{args.anno_dir}/{name}{args.anno_suffix}' 
         if os.path.exists(anno_path) == False:
