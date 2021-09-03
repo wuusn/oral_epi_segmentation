@@ -24,6 +24,7 @@ psize=256
 scale = 4
 downlevel = 16
 tar_mag = 10
+<<<<<<< HEAD
 #WSI_dir = '/mnt/md0/_datasets/OralCavity/WSI'
 WSI_dir = '/mnt/disk1/Oral'
 target = '/mnt/disk1/wsi_patch_OnInOut'
@@ -70,7 +71,6 @@ def task(mask_path='/mnt/md0/_datasets/OralCavity/WSI/Masks_SFVA/SP06-2244 G6_an
     _, sel = sklearn.model_selection.train_test_split(idxs, test_size=sel_size, random_state=56)
     name = WSI_path.split('/')[-1]
     name = name.replace('.tif', '')
-    print(name)
     target_folder = f'{target}/{cohort}/{name}'
     os.makedirs(target_folder, exist_ok=True)
     for i in sel:

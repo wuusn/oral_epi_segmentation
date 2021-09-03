@@ -28,7 +28,11 @@ from torch.utils.data import DataLoader, random_split
 #base_dir= '/mnt/md0/_datasets/OralCavity/tma_3'
 #base_dir = '/mnt/md0/_datasets/OralCavity/tma' 
 #base_dir = '/mnt/md0/_datasets/OralCavity/wsi' 
-base_dir = '/mnt/disk1/train_wsi_OnInOut' 
+#base_dir = '/mnt/disk1/train_wsi_OnInOut' 
+#base_dir = '/mnt/D/Oral/train_wsi' 
+#base_dir = '/mnt/D/Oral/train_wsi_edge' 
+#base_dir = '/mnt/D/Oral/train_wsi_OnInOut'
+base_dir = '/mnt/D/Oral_correct'
 
 def confusion_matrix(y_true, y_pred, N=2):
     indices = N * y_true + y_pred
@@ -250,9 +254,9 @@ def train_net(net,
                 logging.info('Created checkpoint directory')
             except OSError:
                 pass
-            if epoch > 90 or epoch <10:
-                torch.save(net.to(torch.device('cpu')), dir_checkpoint + f'/epoch{epoch}.pth')
-                net.to(device)
+            #if epoch > 90 or epoch <10:
+            #    torch.save(net.to(torch.device('cpu')), dir_checkpoint + f'/epoch{epoch}.pth')
+            #    net.to(device)
 
             if val_loss < min_loss:
                 min_loss = val_loss
