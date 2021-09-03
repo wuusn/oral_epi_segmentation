@@ -104,7 +104,8 @@ def test_wsi_dataset(dataset, args):
             np_heat = np.array(pil_heat).astype(np.uint8)
             np_img = np.array(pil_img).astype(np.uint8)
 
-            pil_mask_pred = Image.fromarray(mask_pred[i]*255)
+            #pil_mask_pred = Image.fromarray(mask_pred[i]*255)
+            pil_mask_pred = Image.fromarray(pred[i]*255)
             pil_mask_pred = pil_mask_pred.resize(\
                     (psize//downby, psize//downby), Image.BICUBIC)
             np_mask_pred = (np.array(pil_mask_pred)/255).astype(np.uint8)
