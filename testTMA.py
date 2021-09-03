@@ -68,7 +68,6 @@ def testOneTMA(im_path):
         for i in range(0,w,psize):
             patch = pil_im.crop((i-laid,j-laid,i+psize+laid,j+psize+laid))
             np_patch = np.array(patch).astype(np.uint8)
-            count +=1
             patch = pil_im.crop((i,j,i+psize,j+psize))
             #patch_mask = pil_mask.crop((i,j,i+psize,j+psize))
             np_patch = np.array(patch).astype(np.uint8)
