@@ -17,6 +17,10 @@ def split(src, save_dir):
             os.symlink(wsi, f'{save_dir}/{phrase}/{name}')
 
 if __name__ == '__main__':
-    cohort = ['SFVA', 'UCSF', 'VUMC']
+    cohort = [
+               #'SFVA', 
+               'UCSF', 
+               'VUMC',
+            ]
     for c in cohort:
-        split(f'/mnt/D/Oral/wsi_patch/{c}', f'/mnt/D/Oral/train_wsi/{c}')
+        split(f'/mnt/disk1/wsi_patch_OnInOut/{c}', f'/mnt/disk1/train_wsi_OnInOut/{c}')

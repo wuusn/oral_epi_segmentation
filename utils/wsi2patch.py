@@ -19,7 +19,7 @@ downlevel = 16
 tar_mag = 10
 WSI_dir = '/mnt/md0/_datasets/OralCavity/WSI'
 #mask_dir = '/mnt/md0/_datasets/OralCavity/WSI/Masks_SFVA'
-target = '/mnt/D/Oral/wsi_patch'
+target = '/mnt/D/Oral/wsi_patch2'
 c2oldc = {'SFVA': 'SFVA', 'UCSF': 'UCSF', 'VUMC': 'Vanderbilt',}
 def readpng(mask_path='/mnt/md0/_datasets/OralCavity/WSI/Masks_SFVA/SP06-2244 G6_anno.png'):
     r = png.Reader(filename=mask_path)
@@ -32,7 +32,8 @@ def task(mask_path='/mnt/md0/_datasets/OralCavity/WSI/Masks_SFVA/SP06-2244 G6_an
     nl = readpng(mask_path=mask_path)
     ts = large_image.getTileSource(WSI_path)
     tiny_mask = cv2.resize(nl, (nl.shape[1]//(psize//scale),nl.shape[0]//(psize//scale)), interp_method)
-    ys,xs = (tiny_mask > 0).nonzero()
+    ys,xs = (tiny_mask > 0).nonzero() #
+    #ys,xs = (tiny_mask >= 0).nonzero() #
     size = len(xs)
     name = WSI_path.split('/')[-1]
     name = name.replace('.tif', '')

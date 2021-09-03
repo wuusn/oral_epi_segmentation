@@ -188,6 +188,7 @@ def get_thumbnail(src_path, args):
 def get_small_src(src_path, args):
     name = src_path.split('/')[-1].replace(f'.{args.src_ext}', '')
     tar_path = f'{args.save_src_dir}/small_src/{name}.{args.tar_ext}'
+    return tar_path
     if os.path.exists(tar_path) == False:
     #if True: # small src quick
         scale = args.src_mag//args.net_mag*args.tar_scale
@@ -293,6 +294,7 @@ def task(src_path, net, device, args):
 #
 def multi_task(src_dir, net, device, args):
     src_paths = glob(f'{args.src}/*.{args.src_ext}')
+    #src_paths = src_paths[:1]
     C = np.zeros((2,2))
     D=0
     count = 0

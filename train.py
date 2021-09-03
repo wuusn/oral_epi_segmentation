@@ -28,7 +28,7 @@ from torch.utils.data import DataLoader, random_split
 #base_dir= '/mnt/md0/_datasets/OralCavity/tma_3'
 #base_dir = '/mnt/md0/_datasets/OralCavity/tma' 
 #base_dir = '/mnt/md0/_datasets/OralCavity/wsi' 
-base_dir = '/mnt/D/Oral/train_wsi' 
+base_dir = '/mnt/disk1/train_wsi_OnInOut' 
 
 def confusion_matrix(y_true, y_pred, N=2):
     indices = N * y_true + y_pred
@@ -134,12 +134,15 @@ def train_net(net,
 
     else:
         min_loss = float('INF')
+        best_precision = 0
+        best_recall = 0
+        best_dice = 0
 
     for epoch in range(start_epoch, epochs+start_epoch):
         net.train()
         epoch_loss = 0
         cm = torch.zeros(2,2).to(device)
-        with tqdm(total=n_train, desc=f'Epoch {epoch + 1}/{epochs}', unit='img') as pbar:
+        with tqdm(total=n_train, desc=f'Epoch {epoch}/{epochs}', unit='img') as pbar:
             for batch in train_loader:
                 imgs = batch['image']
                 true_masks = batch['mask']
@@ -255,22 +258,22 @@ def train_net(net,
                 min_loss = val_loss
                 torch.save(net.to(torch.device('cpu')), dir_checkpoint + f'/min_loss.pth')
                 net.to(device)
-                logging.info(f'Checkpoint {epoch + 1} as new min val loss model saved !')
+                logging.info(f'Checkpoint {epoch} as new min val loss model saved !')
             if  metric['precision'] > best_precision:
                 best_precision = metric['precision']
                 torch.save(net.to(torch.device('cpu')), dir_checkpoint + f'/best_precision.pth')
                 net.to(device)
-                logging.info(f'Checkpoint {epoch + 1} as new best precision model saved !')
+                logging.info(f'Checkpoint {epoch} as new best precision model saved !')
             if  metric['recall'] > best_recall:
                 best_recall= metric['recall']
                 torch.save(net.to(torch.device('cpu')), dir_checkpoint + f'/best_recall.pth')
                 net.to(device)
-                logging.info(f'Checkpoint {epoch + 1} as new best recall model saved !')
+                logging.info(f'Checkpoint {epoch} as new best recall model saved !')
             if  metric['dice'] > best_dice:
                 best_dice= metric['dice']
                 torch.save(net.to(torch.device('cpu')), dir_checkpoint + f'/best_dice.pth')
                 net.to(device)
-                logging.info(f'Checkpoint {epoch + 1} as new best dice model saved !')
+                logging.info(f'Checkpoint {epoch} as new best dice model saved !')
 
 
     writer.close()
