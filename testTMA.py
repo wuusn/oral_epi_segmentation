@@ -135,7 +135,6 @@ def testOneTMA(im_path):
     pil_M.save(maskname)
     #pil_H.save(heatname)
     #return Loss/count, cmatrix
-if __name__ == '__main__':
 
 if __name__ == '__main__':
     start=time.time()
