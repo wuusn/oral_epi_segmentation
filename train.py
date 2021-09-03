@@ -253,9 +253,9 @@ def train_net(net,
                 logging.info('Created checkpoint directory')
             except OSError:
                 pass
-            if epoch > 90 or epoch <10:
-                torch.save(net.to(torch.device('cpu')), dir_checkpoint + f'/epoch{epoch}.pth')
-                net.to(device)
+            #if epoch > 90 or epoch <10:
+            #    torch.save(net.to(torch.device('cpu')), dir_checkpoint + f'/epoch{epoch}.pth')
+            #    net.to(device)
 
             if val_loss < min_loss:
                 min_loss = val_loss

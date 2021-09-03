@@ -1,0 +1,1 @@
+python testTMA.py /ssd/Oral/train@256Overlap50/save/norm/checkpoints/best_dice.pth /raid10/_datasets/Oral/TMA/IHCHE/tissue_epi_0.3 _real_B.png '/raid10/_datasets/Oral/TMA/IHCHE/retrainOverlapNormResult'

@@ -11,6 +11,7 @@ from scipy.ndimage.morphology import binary_dilation
 import numpy as np
 import torch
 import large_image
+from cypath.pytorch.normalizeStaining import normalizeStaining
 #from histomicstk.preprocessing.augmentation.\
 #                                            color_augmentation import rgb_perturb_stain_concentration, perturb_stain_concentration
 
@@ -167,8 +168,8 @@ class BasicDataset(Dataset):
         self.dir = dir
         self.phase = phase
         self.args = args
-        self.img_paths = [f for f in glob(f'{dir}/*/*/*.png') if not f.endswith('_mask.png')]
-        #self.img_paths = [f for f in glob(f'{dir}/*/*.png') if not f.endswith('_mask.png')]
+        #self.img_paths = [f for f in glob(f'{dir}/*/*/*.png') if not f.endswith('_mask.png')]
+        self.img_paths = [f for f in glob(f'{dir}/*/*/*.jpg') if not f.endswith('_mask.png')]
         self.label2idx = {'epi':1, 'nontumor':0, 'tumor':1}
 
     def __len__(self):
@@ -176,7 +177,7 @@ class BasicDataset(Dataset):
 
     def __getitem__(self, i):
         img_path = self.img_paths[i]
-        mask_path = img_path.replace('.png', '_mask.png')
+        mask_path = img_path.replace('.jpg', '.png')
         pil_img = Image.open(img_path)
         if self.args.tumor:
             label = img_path.split('/')[-3]
@@ -216,6 +217,7 @@ class BasicDataset(Dataset):
 #        return {'image': ToTensor()(pil_img)}
 
             np_img = np.array(pil_img)
+            #np_img, _, _ = normalizeStaining(np_img)
             if self.args.he_color == True and self.phase == 'train':
                 try:
                     np_img = rgb_perturb_stain_concentration(np_img)
