@@ -64,10 +64,10 @@ def get_boundingBox(anno):
     return [a,b,c,d]
 
 def return_box(src_path, mask_path, args, scale=40):
-    im = Image.open(src_path)
+    #im = Image.open(src_path)
     anno_path = mask_path
     anno = cv2.imread(anno_path, 0)
-    small_anno = cv2.resize(anno, (im.size[0]//scale, im.size[1]//scale))
+    #small_anno = cv2.resize(anno, (im.size[0]//scale, im.size[1]//scale))
     if args.box_mode == 'bb':
         #name = src_path.split('/')[-1].replace('.png', '')
         #anno_coarse_path = f'/mnt/md0/_datasets/OralCavity/WSI/UCSF/Masks/{name}.png' 

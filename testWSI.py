@@ -188,6 +188,7 @@ def get_thumbnail(src_path, args):
 def get_small_src(src_path, args):
     name = src_path.split('/')[-1].replace(f'.{args.src_ext}', '')
     tar_path = f'{args.save_src_dir}/small_src/{name}.{args.tar_ext}'
+    return tar_path
     if os.path.exists(tar_path) == False:
     #if True: # small src quick
         scale = args.src_mag//args.net_mag*args.tar_scale

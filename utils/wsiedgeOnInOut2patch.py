@@ -24,9 +24,10 @@ psize=256
 scale = 4
 downlevel = 16
 tar_mag = 10
-WSI_dir = '/mnt/md0/_datasets/OralCavity/WSI'
-#mask_dir = '/mnt/md0/_datasets/OralCavity/WSI/Masks_SFVA'
-target = '/mnt/D/Oral/wsi_patch_OnInOut'
+<<<<<<< HEAD
+#WSI_dir = '/mnt/md0/_datasets/OralCavity/WSI'
+WSI_dir = '/mnt/disk1/Oral'
+target = '/mnt/disk1/wsi_patch_OnInOut'
 c2oldc = {'SFVA': 'SFVA', 'UCSF': 'UCSF', 'VUMC': 'Vanderbilt',}
 def readpng(mask_path='/mnt/md0/_datasets/OralCavity/WSI/Masks_SFVA/SP06-2244 G6_anno.png'):
     r = png.Reader(filename=mask_path)
@@ -101,7 +102,10 @@ def task(mask_path='/mnt/md0/_datasets/OralCavity/WSI/Masks_SFVA/SP06-2244 G6_an
     ys,xs = (tiny_out > 0).nonzero() #
     size = len(xs)
     idxs = list(range(0, size))
-    _, sel = sklearn.model_selection.train_test_split(idxs, test_size=sel_size, random_state=56)
+    if size < sel_size:
+        sel = list(range(0, size))
+    else:
+        _, sel = sklearn.model_selection.train_test_split(idxs, test_size=sel_size, random_state=56)
     for i in sel:
         x = xs[i]*psize*scale
         y = ys[i]*psize*scale
@@ -126,7 +130,10 @@ def task(mask_path='/mnt/md0/_datasets/OralCavity/WSI/Masks_SFVA/SP06-2244 G6_an
     ys,xs = (tiny_out > 0).nonzero() #
     size = len(xs)
     idxs = list(range(0, size))
-    _, sel = sklearn.model_selection.train_test_split(idxs, test_size=sel_size, random_state=56)
+    if size < sel_size:
+        sel = list(range(0, size))
+    else:
+        _, sel = sklearn.model_selection.train_test_split(idxs, test_size=sel_size, random_state=56)
     for i in sel:
         x = xs[i]*psize*scale
         y = ys[i]*psize*scale
@@ -147,9 +154,9 @@ def task(mask_path='/mnt/md0/_datasets/OralCavity/WSI/Masks_SFVA/SP06-2244 G6_an
         pil_mask.save(f'{target_folder}/{name}_{i}_{int(x)}_{int(y)}_in_mask.png')
 if __name__ == '__main__':
     cohorts = [
-                'SFVA',
-                #'UCSF',
-                #'VUMC',
+                #'SFVA',
+                'UCSF',
+                'VUMC',
             ]
     start = time.time()
     #task(WSI_path=f'{WSI_dir}/SP06-4230 A2.tif', mask_path=f'{mask_dir}/yellow/SP06-4230 A2.png')

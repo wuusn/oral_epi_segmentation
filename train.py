@@ -28,9 +28,11 @@ from torch.utils.data import DataLoader, random_split
 #base_dir= '/mnt/md0/_datasets/OralCavity/tma_3'
 #base_dir = '/mnt/md0/_datasets/OralCavity/tma' 
 #base_dir = '/mnt/md0/_datasets/OralCavity/wsi' 
+#base_dir = '/mnt/disk1/train_wsi_OnInOut' 
 #base_dir = '/mnt/D/Oral/train_wsi' 
 #base_dir = '/mnt/D/Oral/train_wsi_edge' 
-base_dir = '/ssd/Oral'
+#base_dir = '/mnt/D/Oral/train_wsi_OnInOut'
+base_dir = '/mnt/D/Oral_correct'
 
 def confusion_matrix(y_true, y_pred, N=2):
     indices = N * y_true + y_pred
