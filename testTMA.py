@@ -17,11 +17,11 @@ Image.MAX_IMAGE_PIXELS = None
 laid=8
 psize=256-2*laid
 threshold=.5#.65
-scale = 4
 model_path = sys.argv[1]
 target = sys.argv[2]
 src_ext = sys.argv[3]
-save_dir = sys.argv[4]
+scale = int(sys.argv[4])
+save_dir = sys.argv[5]
 #mask_ext = sys.argv[4]
 #mark = model_path.split('/')[-3] + '_' + model_path.split('/')[-1].replace('.pth', '').replace('CP_epoch', '')
 mark = ''
@@ -143,7 +143,7 @@ if __name__ == '__main__':
         testOneTMA(target)
     else:
         im_paths = glob(f'{target}/*{src_ext}')
-        for im_path in im_paths:
+        for im_path in im_paths[:1]:
             print(im_path.split('/')[-1])
             testOneTMA(im_path)
     end=time.time()

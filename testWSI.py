@@ -299,7 +299,7 @@ def multi_task(src_dir, net, device, args):
     C = np.zeros((2,2))
     D=0
     count = 0
-    for src_path in src_paths:
+    for src_path in src_paths[:1]:
         name = src_path.split('/')[-1].replace(f'.{args.src_ext}', '')
         anno_path =  f'{args.anno_dir}/{name}{args.anno_suffix}' 
         if os.path.exists(anno_path) == False:
